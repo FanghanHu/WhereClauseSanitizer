@@ -47,5 +47,23 @@ done
 
 echo "Migrations complete."
 
+# Apply seed data only when SEED_DATA=true (i.e. dev mode)
+if [ "${SEED_DATA}" = "true" ]; then
+    echo "SEED_DATA=true — applying seed data..."
+    for SQL_FILE in /seed_data/*.sql; do
+        [ -f "$SQL_FILE" ] || continue
+        echo "  → Applying $(basename "$SQL_FILE")"
+        /opt/mssql-tools18/bin/sqlcmd \
+            -S localhost \
+            -U sa \
+            -P "${MSSQL_SA_PASSWORD}" \
+            -C \
+            -i "$SQL_FILE"
+    done
+    echo "Seed data applied."
+else
+    echo "Skipping seed data (run with --dev flag to insert seed data)."
+fi
+
 # Hand off to the SQL Server process
 wait "$MSSQL_PID"
