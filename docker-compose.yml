@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  sqlserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: where_clause_sanitizer_db
+    environment:
+      # REQUIRED: SA password must satisfy SQL Server complexity rules
+      # (at least 8 characters, uppercase, lowercase, digit, and symbol).
+      # Override with your own value before running in production.
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Str0ng!Passw0rd}"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      # Persist database files across container restarts
+      - sqlserver_data:/var/opt/mssql
+    restart: unless-stopped
+    healthcheck:
+      test: >
+        /opt/mssql-tools18/bin/sqlcmd
+        -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C
+        -Q "SELECT 1" || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+
+  web:
+    image: node:lts-alpine
+    container_name: where_clause_sanitizer_web
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sh -c "npm install --omit=dev && node server.js"
+    environment:
+      DB_SERVER: sqlserver
+      DB_PORT: "1433"
+      DB_USER: sa
+      DB_PASSWORD: "${MSSQL_SA_PASSWORD:-Str0ng!Passw0rd}"
+      DB_DATABASE: ExampleDB
+      PORT: "3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
