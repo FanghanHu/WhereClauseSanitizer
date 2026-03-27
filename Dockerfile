@@ -16,7 +16,7 @@ ENV MSSQL_PID=Express
 # Copy migration scripts and the custom entrypoint
 COPY migrations/ /migrations/
 COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 # SQL Server default port
 EXPOSE 1433

@@ -26,10 +26,32 @@ docker compose up --build --detach
 echo ""
 echo "Container started. Waiting for SQL Server to be healthy..."
 
-# Poll until the healthcheck passes
+# Poll until the healthcheck passes, with failure detection and timeout.
+MAX_WAIT=300
+ELAPSED=0
 until [ "$(docker inspect --format='{{.State.Health.Status}}' where_clause_sanitizer_db 2>/dev/null)" = "healthy" ]; do
-    echo "  ... waiting"
+    STATUS="$(docker inspect --format='{{.State.Status}}' where_clause_sanitizer_db 2>/dev/null || true)"
+    RESTARTING="$(docker inspect --format='{{.State.Restarting}}' where_clause_sanitizer_db 2>/dev/null || true)"
+
+    if [ "$STATUS" = "exited" ] || [ "$STATUS" = "dead" ] || [ "$RESTARTING" = "true" ]; then
+        echo ""
+        echo "Container failed to become healthy (status=$STATUS, restarting=$RESTARTING)."
+        echo "Recent container logs:"
+        docker compose logs --tail=80 sqlserver || true
+        exit 1
+    fi
+
+    if [ "$ELAPSED" -ge "$MAX_WAIT" ]; then
+        echo ""
+        echo "Timed out after ${MAX_WAIT}s waiting for a healthy SQL Server container."
+        echo "Recent container logs:"
+        docker compose logs --tail=80 sqlserver || true
+        exit 1
+    fi
+
+    echo "  ... waiting (${ELAPSED}s elapsed, status=${STATUS:-unknown})"
     sleep 5
+    ELAPSED=$((ELAPSED + 5))
 done
 
 echo ""
@@ -41,5 +63,9 @@ echo "  Database: ExampleDB"
 echo "  User    : sa"
 echo "  Password: ${MSSQL_SA_PASSWORD}"
 echo ""
-echo "To stop the server run:  docker compose down"
-echo "To view logs run:        docker compose logs -f"
+echo "Node web server is starting (depends on SQL Server health)..."
+echo "  Web UI  : http://localhost:3000"
+echo ""
+echo "To stop all services run:  docker compose down"
+echo "To view logs run:          docker compose logs -f"
+echo "To view web logs run:      docker compose logs -f web"

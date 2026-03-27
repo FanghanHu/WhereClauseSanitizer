@@ -29,5 +29,26 @@ services:
       retries: 6
       start_period: 30s
 
+  web:
+    image: node:lts-alpine
+    container_name: where_clause_sanitizer_web
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sh -c "npm install --omit=dev && node server.js"
+    environment:
+      DB_SERVER: sqlserver
+      DB_PORT: "1433"
+      DB_USER: sa
+      DB_PASSWORD: "${MSSQL_SA_PASSWORD:-Str0ng!Passw0rd}"
+      DB_DATABASE: ExampleDB
+      PORT: "3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   sqlserver_data:

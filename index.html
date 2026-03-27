@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhereClauseSanitizer Sample Feed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-1: #fff9ef;
+      --bg-2: #e8f4ff;
+      --ink: #1c2025;
+      --muted: #5c6672;
+      --card: #ffffff;
+      --stroke: #ccd7e2;
+      --accent: #d14f2a;
+      --accent-soft: #ffe0d6;
+      --tag: #17375e;
+      --shadow: 0 16px 36px rgba(28, 32, 37, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Archivo", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% -10%, rgba(243, 170, 66, 0.4), transparent 38%),
+        radial-gradient(circle at 90% 0%, rgba(70, 140, 210, 0.34), transparent 45%),
+        linear-gradient(130deg, var(--bg-1), var(--bg-2));
+      background-attachment: fixed;
+    }
+
+    .page {
+      width: min(1050px, 94vw);
+      margin: 2.2rem auto 3rem;
+    }
+
+    .hero {
+      position: relative;
+      padding: 1.5rem 1.25rem 1.1rem;
+      border: 1px solid var(--stroke);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(2px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: slideIn 0.6s ease-out;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -50px;
+      top: -70px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(209, 79, 42, 0.22), transparent 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      font-family: "Space Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      color: var(--tag);
+      font-size: 0.75rem;
+      margin: 0;
+    }
+
+    h1 {
+      margin: 0.5rem 0 0.35rem;
+      font-size: clamp(1.5rem, 3.4vw, 2.5rem);
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      max-width: 68ch;
+      line-height: 1.5;
+    }
+
+    .stats {
+      margin-top: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+
+    .chip {
+      font-family: "Space Mono", monospace;
+      font-size: 0.8rem;
+      background: #f7fafc;
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+    }
+
+    .feed {
+      margin-top: 1.1rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .post {
+      border: 1px solid var(--stroke);
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+      transform: translateY(8px);
+      opacity: 0;
+      animation: reveal 0.45s ease forwards;
+    }
+
+    .post-head {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+    }
+
+    .post h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      line-height: 1.3;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .post p {
+      margin: 0.6rem 0 0;
+      line-height: 1.52;
+    }
+
+    .comment-list {
+      list-style: none;
+      margin: 0.85rem 0 0;
+      padding: 0;
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .comment {
+      border-left: 4px solid var(--accent-soft);
+      border: 1px solid #ebeff4;
+      border-left-width: 4px;
+      border-radius: 10px;
+      background: #fcfdff;
+      padding: 0.52rem 0.62rem;
+    }
+
+    .comment-author {
+      display: inline-block;
+      margin-bottom: 0.2rem;
+      font-family: "Space Mono", monospace;
+      font-weight: 700;
+      font-size: 0.76rem;
+      color: var(--tag);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .comment p {
+      margin: 0;
+      color: #2e3338;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    @keyframes reveal {
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-6px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        width: 93vw;
+        margin-top: 1.2rem;
+      }
+
+      .hero {
+        border-radius: 16px;
+        padding: 1rem;
+      }
+
+      .post {
+        border-radius: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">WhereClauseSanitizer</p>
+      <h1>Example posts and comments</h1>
+      <p class="subtitle">
+        This page mirrors the seed data in the SQL migration and groups comments under each post.
+      </p>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <section class="feed" id="feed">
+      <article class="post">
+        <p class="meta">Loading posts and comments from SQL Server...</p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const statsNode = document.getElementById("stats");
+    const feedNode = document.getElementById("feed");
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function renderStats(users, posts, comments) {
+      statsNode.innerHTML = `
+        <span class="chip">${users.length} users</span>
+        <span class="chip">${posts.length} posts</span>
+        <span class="chip">${comments.length} comments</span>
+      `;
+    }
+
+    function renderFeed(users, posts, comments) {
+      const usersById = Object.fromEntries(users.map((u) => [u.id, u]));
+      feedNode.innerHTML = "";
+
+      posts.forEach((post, index) => {
+        const author = usersById[post.authorId] || { username: post.authorUsername || "unknown" };
+        const postComments = comments.filter((comment) => comment.postId === post.id);
+
+        const article = document.createElement("article");
+        article.className = "post";
+        article.style.animationDelay = `${index * 70}ms`;
+
+        const commentsHtml = postComments
+          .map((comment) => {
+            const commentAuthor = usersById[comment.authorId] || { username: comment.authorUsername || "unknown" };
+            return `
+              <li class="comment">
+                <span class="comment-author">${escapeHtml(commentAuthor.username)}</span>
+                <p>${escapeHtml(comment.body)}</p>
+              </li>
+            `;
+          })
+          .join("");
+
+        article.innerHTML = `
+          <div class="post-head">
+            <h2>${escapeHtml(post.title)}</h2>
+            <span class="meta">by ${escapeHtml(author.username)} · ${postComments.length} comments</span>
+          </div>
+          <p>${escapeHtml(post.body)}</p>
+          <ul class="comment-list">${commentsHtml}</ul>
+        `;
+
+        feedNode.appendChild(article);
+      });
+    }
+
+    async function loadFeed() {
+      try {
+        const response = await fetch("/api/feed");
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderStats(data.users || [], data.posts || [], data.comments || []);
+        renderFeed(data.users || [], data.posts || [], data.comments || []);
+      } catch (error) {
+        statsNode.innerHTML = "<span class=\"chip\">Database unavailable</span>";
+        feedNode.innerHTML = `
+          <article class="post">
+            <div class="post-head">
+              <h2>Could not load feed from database</h2>
+            </div>
+            <p class="meta">${escapeHtml(error.message)}</p>
+            <p>Make sure the web server is running and SQL Server is reachable.</p>
+          </article>
+        `;
+      }
+    }
+
+    loadFeed();
+  </script>
+</body>
+</html>
