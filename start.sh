@@ -4,6 +4,7 @@
 #
 # Usage:
 #   ./start.sh                     # uses default SA password
+#   ./start.sh --dev               # also inserts seed data into the database
 #   MSSQL_SA_PASSWORD=MyPass ./start.sh   # override SA password
 
 set -e
@@ -11,8 +12,26 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Parse flags
+DEV_MODE=false
+for arg in "$@"; do
+    case "$arg" in
+        --dev)
+            DEV_MODE=true
+            ;;
+    esac
+done
+
 # Default SA password (override via environment variable)
 export MSSQL_SA_PASSWORD="${MSSQL_SA_PASSWORD:-Str0ng!Passw0rd}"
+
+# Export SEED_DATA so docker-compose passes it through to the container
+if [ "$DEV_MODE" = "true" ]; then
+    export SEED_DATA=true
+    echo "Dev mode enabled — seed data will be inserted."
+else
+    export SEED_DATA=false
+fi
 
 echo "=============================================="
 echo " WhereClauseSanitizer — SQL Server 2025 Express"

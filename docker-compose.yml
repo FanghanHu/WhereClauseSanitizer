@@ -13,6 +13,7 @@ services:
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD:-Str0ng!Passw0rd}"
       ACCEPT_EULA: "Y"
       MSSQL_PID: "Express"
+      SEED_DATA: "${SEED_DATA:-false}"
     ports:
       - "1433:1433"
     volumes:

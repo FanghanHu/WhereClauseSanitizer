@@ -13,8 +13,9 @@ USER root
 # Set the edition to Express
 ENV MSSQL_PID=Express
 
-# Copy migration scripts and the custom entrypoint
+# Copy migration scripts, seed data, and the custom entrypoint
 COPY migrations/ /migrations/
+COPY seed_data/ /seed_data/
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
