@@ -40,6 +40,13 @@ echo ""
 echo "Building image and starting container..."
 echo ""
 
+# Fail fast with actionable guidance if Docker daemon is unavailable.
+if ! docker info >/dev/null 2>&1; then
+    echo "Docker daemon is not reachable."
+    echo "Please start Docker Desktop and ensure Linux containers are enabled, then retry."
+    exit 1
+fi
+
 docker compose up --build --detach
 
 echo ""
