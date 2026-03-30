@@ -86,6 +86,37 @@ class TableSchema {
   }
 
   /**
+   * Generates a CREATE OR ALTER TRIGGER statement that automatically sets the
+   * `Updated` column to SYSDATETIME() whenever a row is modified.
+   * This mirrors the standard Updated-column trigger shared by every table.
+   *
+   * Requires `primaryKey` to be set on the schema.
+   *
+   * @returns {string}
+   */
+  createUpdateTrigger() {
+    if (!this.primaryKey) {
+      throw new Error(
+        `TableSchema(${this.tableName}): createUpdateTrigger() requires a primaryKey to be defined.`
+      );
+    }
+    const triggerName = `trg_${this.tableName}_Updated`;
+    return (
+      `CREATE OR ALTER TRIGGER ${triggerName}\n` +
+      `ON ${this.tableName}\n` +
+      `AFTER UPDATE\n` +
+      `AS\n` +
+      `BEGIN\n` +
+      `    SET NOCOUNT ON;\n` +
+      `    UPDATE ${this.tableName}\n` +
+      `    SET    Updated = SYSDATETIME()\n` +
+      `    FROM   ${this.tableName} t\n` +
+      `    INNER JOIN inserted i ON t.${this.primaryKey} = i.${this.primaryKey};\n` +
+      `END`
+    );
+  }
+
+  /**
    * Builds a SELECT query.
    *
    * @param {Object}         [options]

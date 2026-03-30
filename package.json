@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test queryBuilder.test.js"
+    "test": "node --test queryBuilder.test.js",
+    "generate:migrations": "node migrations/generate.js"
   },
   "dependencies": {
     "express": "^4.21.2",

@@ -59,6 +59,44 @@ describe('TableSchema.createTable()', () => {
 });
 
 // ---------------------------------------------------------------------------
+// TableSchema — createUpdateTrigger()
+// ---------------------------------------------------------------------------
+describe('TableSchema.createUpdateTrigger()', () => {
+  it('generates a CREATE OR ALTER TRIGGER statement', () => {
+    const sql = Users.createUpdateTrigger();
+    assert.match(sql, /CREATE OR ALTER TRIGGER trg_atbl_Example_Users_Updated/);
+    assert.match(sql, /ON atbl_Example_Users/);
+    assert.match(sql, /AFTER UPDATE/);
+  });
+
+  it('sets Updated = SYSDATETIME() in the trigger body', () => {
+    const sql = Users.createUpdateTrigger();
+    assert.match(sql, /SET\s+Updated = SYSDATETIME\(\)/);
+  });
+
+  it('joins on the primary key column', () => {
+    const sql = Users.createUpdateTrigger();
+    assert.match(sql, /INNER JOIN inserted i ON t\.PrimKey = i\.PrimKey/);
+  });
+
+  it('uses the correct table name in all references', () => {
+    const sql = Posts.createUpdateTrigger();
+    assert.match(sql, /trg_atbl_Example_Posts_Updated/);
+    assert.match(sql, /ON atbl_Example_Posts/);
+    assert.match(sql, /UPDATE atbl_Example_Posts/);
+    assert.match(sql, /FROM\s+atbl_Example_Posts t/);
+  });
+
+  it('throws when primaryKey is not defined', () => {
+    const schema = new TableSchema({
+      tableName: 'atbl_Example_NoPK',
+      columns: { Note: 'NVARCHAR(255) NULL' }
+    });
+    assert.throws(() => schema.createUpdateTrigger(), /primaryKey/);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // TableSchema — select()
 // ---------------------------------------------------------------------------
 describe('TableSchema.select()', () => {
