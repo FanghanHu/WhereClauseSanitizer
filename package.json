@@ -5,7 +5,9 @@
   "description": "Simple web UI for WhereClauseSanitizer sample data",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test queryBuilder.test.js",
+    "generate:migrations": "node migrations/generate.js"
   },
   "dependencies": {
     "express": "^4.21.2",

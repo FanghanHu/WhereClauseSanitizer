@@ -1,6 +1,7 @@
 const express = require("express");
 const sql = require("mssql");
 const path = require("path");
+const { Users, Posts, Comments } = require("./schemas");
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -34,25 +35,40 @@ function getPool() {
 async function loadFeed() {
   const pool = await getPool();
 
-  const usersResult = await pool.request().query(`
-    SELECT PrimKey AS id, Username, Email
-    FROM atbl_Example_Users
-    ORDER BY Username;
-  `);
+  const usersSql = Users.select({
+    columns: ["PrimKey AS id", "Username", "Email"],
+    orderBy: ["Username"]
+  }).sql;
 
-  const postsResult = await pool.request().query(`
-    SELECT p.PrimKey AS id, p.Author_ID AS authorId, p.Title, p.Body, u.Username AS authorUsername
-    FROM atbl_Example_Posts p
-    INNER JOIN atbl_Example_Users u ON u.PrimKey = p.Author_ID
-    ORDER BY p.Created, p.PrimKey;
-  `);
+  const postsSql = Posts.select({
+    alias: "p",
+    columns: [
+      "p.PrimKey AS id",
+      "p.Author_ID AS authorId",
+      "p.Title",
+      "p.Body",
+      "u.Username AS authorUsername"
+    ],
+    joins: ["INNER JOIN atbl_Example_Users u ON u.PrimKey = p.Author_ID"],
+    orderBy: ["p.Created", "p.PrimKey"]
+  }).sql;
 
-  const commentsResult = await pool.request().query(`
-    SELECT c.PrimKey AS id, c.Post_ID AS postId, c.Author_ID AS authorId, c.Body, u.Username AS authorUsername
-    FROM atbl_Example_Comments c
-    INNER JOIN atbl_Example_Users u ON u.PrimKey = c.Author_ID
-    ORDER BY c.Created, c.PrimKey;
-  `);
+  const commentsSql = Comments.select({
+    alias: "c",
+    columns: [
+      "c.PrimKey AS id",
+      "c.Post_ID AS postId",
+      "c.Author_ID AS authorId",
+      "c.Body",
+      "u.Username AS authorUsername"
+    ],
+    joins: ["INNER JOIN atbl_Example_Users u ON u.PrimKey = c.Author_ID"],
+    orderBy: ["c.Created", "c.PrimKey"]
+  }).sql;
+
+  const usersResult = await pool.request().query(usersSql);
+  const postsResult = await pool.request().query(postsSql);
+  const commentsResult = await pool.request().query(commentsSql);
 
   const users = usersResult.recordset.map((row) => ({
     id: row.id,
